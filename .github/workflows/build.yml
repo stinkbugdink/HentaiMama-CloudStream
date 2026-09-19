@@ -1,0 +1,76 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew HentaiMamaProvider:make
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+      - name: Upload plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin
+          path: HentaiMamaProvider/build/*.cs3
+      - name: Deploy to builds branch
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: HentaiMamaProvider/build
+          publish_branch: builds
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+
+  generate-plugins-json:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: builds
+      - name: Generate plugins.json
+        run: |
+          cat > plugins.json << 'EOF'
+          {
+            "name": "HentaiMama-CloudStream",
+            "description": "HentaiMama - Free Hentai Streaming with English Subtitles",
+            "manifestVersion": 1,
+            "pluginLists": [
+              "https://raw.githubusercontent.com/stinkbugdink/HentaiMama-CloudStream/builds/plugins.json"
+            ]
+          }
+          EOF
+      - name: Deploy plugins.json
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: builds
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
