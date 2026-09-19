@@ -20,6 +20,14 @@ allprojects {
         google()
         mavenCentral()
         maven("https://jitpack.io")
+        // CloudStream artifacts are published to GitHub Packages
+        maven {
+            url = uri("https://maven.pkg.github.com/recloudstream/gradle")
+            credentials {
+                username = "recloudstream"
+                password = System.getenv("GITHUB_TOKEN") ?: ""
+            }
+        }
     }
 }
 
