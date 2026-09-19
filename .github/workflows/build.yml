@@ -43,6 +43,7 @@ jobs:
           force_orphan: true
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
+          keep_files: true
 
   generate-plugins-json:
     needs: build
@@ -53,7 +54,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: builds
+          # Skip if builds branch doesn't exist yet
       - name: Generate plugins.json
+        if: github.ref == 'refs/heads/main'
         run: |
           cat > plugins.json << 'EOF'
           {
@@ -66,6 +69,7 @@ jobs:
           }
           EOF
       - name: Deploy plugins.json
+        if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -74,3 +78,4 @@ jobs:
           force_orphan: true
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
+          keep_files: true
