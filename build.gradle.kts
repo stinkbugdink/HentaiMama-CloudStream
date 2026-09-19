@@ -1,7 +1,5 @@
 import com.lagradost.cloudstream3.gradle.CloudstreamExtension
 import com.android.build.gradle.BaseExtension
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
@@ -11,9 +9,9 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.5.2")
+        classpath("com.android.tools.build:gradle:8.1.4")
         classpath("com.github.recloudstream:gradle:-SNAPSHOT")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
     }
 }
 
@@ -35,8 +33,8 @@ subprojects {
     apply(plugin = "com.lagradost.cloudstream3.gradle")
 
     cloudstream {
-        setRepo(System.getenv("GITHUB_REPOSITORY") ?: "https://github.com/stinkbugNSFW/HentaiMama-CloudStream")
-        authors = listOf("stinkbugNSFW")
+        setRepo(System.getenv("GITHUB_REPOSITORY") ?: "https://github.com/stinkbugdink/HentaiMama-CloudStream")
+        authors = listOf("stinkbugdink")
     }
 
     android {
@@ -52,32 +50,25 @@ subprojects {
             targetCompatibility = JavaVersion.VERSION_1_8
         }
 
-        tasks.withType<KotlinCompile> {
-            compilerOptions {
-                jvmTarget.set(JvmTarget.JVM_1_8)
-                freeCompilerArgs.addAll(
-                    "-Xno-call-assertions",
-                    "-Xno-param-assertions",
-                    "-Xno-receiver-assertions"
-                )
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+            kotlinOptions {
+                jvmTarget = "1.8"
+                freeCompilerArgs = freeCompilerArgs +
+                        "-Xno-call-assertions" +
+                        "-Xno-param-assertions" +
+                        "-Xno-receiver-assertions"
             }
         }
     }
 
-    // Fix for AGP 8.x: apk configuration was removed, create it manually
-    configurations {
-        create("apk") {
-            isCanBeConsumed = false
-            isCanBeResolved = true
-        }
-    }
-
     dependencies {
-        val apk by configurations
         val implementation by configurations
 
-        apk("com.lagradost:cloudstream3:pre-release")
+        // CloudStream API for compilation (provided by the app at runtime)
+        implementation("com.lagradost:cloudstream3:pre-release")
 
+        // these dependencies can include any of those which are added by the app,
+        // but you dont need to include any of them if you dont need them
         implementation(kotlin("stdlib"))
         implementation("com.github.Blatzar:NiceHttp:0.4.11")
         implementation("org.jsoup:jsoup:1.17.2")
