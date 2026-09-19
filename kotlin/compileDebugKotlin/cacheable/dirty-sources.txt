@@ -1,0 +1,2 @@
+/home/runner/work/HentaiMama-CloudStream/HentaiMama-CloudStream/HentaiMamaProvider/src/main/kotlin/com/stinkbugNSFW/hentaimama/HentaiMamaProvider.kt
+/home/runner/work/HentaiMama-CloudStream/HentaiMama-CloudStream/HentaiMamaProvider/src/main/kotlin/com/stinkbugNSFW/hentaimama/HentaiMamaPlugin.kt
