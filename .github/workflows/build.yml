@@ -36,29 +36,36 @@ jobs:
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Build with Gradle (verbose)
-        run: ./gradlew HentaiMamaProvider:make --debug --stacktrace 2>&1 | tee build.log
+      - name: Build with Gradle
+        run: ./gradlew HentaiMamaProvider:make --stacktrace
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
-      - name: Upload build log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build.log
-      - name: Upload plugin
-        uses: actions/upload-artifact@v4
-        with:
-          name: plugin
-          path: HentaiMamaProvider/build/*.cs3
+      - name: Prepare deploy directory
+        run: |
+          mkdir -p deploy
+          cp HentaiMamaProvider/build/*.cs3 deploy/ 2>/dev/null || echo "No .cs3 found"
+          ls -la deploy/
+      - name: Generate plugins.json
+        run: |
+          cat > deploy/plugins.json << 'EOF'
+          {
+            "name": "HentaiMama-CloudStream",
+            "description": "HentaiMama - Free Hentai Streaming with English Subtitles",
+            "manifestVersion": 1,
+            "pluginLists": [
+              "https://raw.githubusercontent.com/stinkbugdink/HentaiMama-CloudStream/builds/plugins.json"
+            ]
+          }
+          EOF
+          cat deploy/plugins.json
       - name: Deploy to builds branch
         if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: HentaiMamaProvider/build
+          publish_dir: deploy
           publish_branch: builds
           force_orphan: true
           keep_files: true
