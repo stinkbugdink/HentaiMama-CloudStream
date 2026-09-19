@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+build/
+!HentaiMamaProvider/build.gradle.kts
+
+# Local properties (SDK path)
+local.properties
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Android SDK
+AndroidSdk/
+
+# Jitpack cache
+jitpack_*.html
+jitpack_*.json
+cs_ext_build.gradle.kts
+maven-metadata.xml
+test.pom
+module_list*.html
+
+# Wrapper (if you want to use system gradle instead)
+# gradle/wrapper/gradle-wrapper.jar
