@@ -20,14 +20,6 @@ allprojects {
         google()
         mavenCentral()
         maven("https://jitpack.io")
-        // CloudStream artifacts are published to GitHub Packages
-        maven {
-            url = uri("https://maven.pkg.github.com/recloudstream/gradle")
-            credentials {
-                username = "recloudstream"
-                password = System.getenv("GITHUB_TOKEN") ?: ""
-            }
-        }
     }
 }
 
@@ -72,9 +64,7 @@ subprojects {
     dependencies {
         val implementation by configurations
 
-        // CloudStream API for compilation (provided by the app at runtime)
-        implementation("com.lagradost:cloudstream3:pre-release")
-
+        // CloudStream API is provided by the plugin automatically
         // these dependencies can include any of those which are added by the app,
         // but you dont need to include any of them if you dont need them
         implementation(kotlin("stdlib"))
