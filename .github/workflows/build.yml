@@ -3,8 +3,7 @@ name: Build
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,10 +21,13 @@ jobs:
           java-version: '17'
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          api-level: 34
+          ndk-version: r27b
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        run: ./gradlew HentaiMamaProvider:make
+        run: ./gradlew HentaiMamaProvider:make --info
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
       - name: Upload plugin
@@ -41,41 +43,6 @@ jobs:
           publish_dir: HentaiMamaProvider/build
           publish_branch: builds
           force_orphan: true
+          keep_files: true
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-          keep_files: true
-
-  generate-plugins-json:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: builds
-          # Skip if builds branch doesn't exist yet
-      - name: Generate plugins.json
-        if: github.ref == 'refs/heads/main'
-        run: |
-          cat > plugins.json << 'EOF'
-          {
-            "name": "HentaiMama-CloudStream",
-            "description": "HentaiMama - Free Hentai Streaming with English Subtitles",
-            "manifestVersion": 1,
-            "pluginLists": [
-              "https://raw.githubusercontent.com/stinkbugdink/HentaiMama-CloudStream/builds/plugins.json"
-            ]
-          }
-          EOF
-      - name: Deploy plugins.json
-        if: github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          publish_branch: builds
-          force_orphan: true
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          keep_files: true
