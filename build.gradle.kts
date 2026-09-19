@@ -63,8 +63,11 @@ subprojects {
 
     dependencies {
         val implementation by configurations
+        val compileOnly by configurations
 
-        // CloudStream API is provided by the plugin automatically
+        // CloudStream API stubs for compilation (provided by the app at runtime)
+        compileOnly("com.github.recloudstream:cloudstream3:pre-release")
+
         // these dependencies can include any of those which are added by the app,
         // but you dont need to include any of them if you dont need them
         implementation(kotlin("stdlib"))
