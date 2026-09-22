@@ -13,13 +13,7 @@ cloudstream {
 
 dependencies {
     val implementation by configurations
-    val compileOnly by configurations
 
-    // Stubs for all CloudStream classes - provided by the app at runtime
-    compileOnly("com.github.recloudstream.cloudstream:library:4.8.0")
-
-    // these dependencies can include any of those which are added by the app,
-    // but you dont need to include any of them if you dont need them
     implementation(kotlin("stdlib"))
     implementation("com.github.Blatzar:NiceHttp:0.4.11")
     implementation("org.jsoup:jsoup:1.17.2")

@@ -1,5 +1,6 @@
 import com.lagradost.cloudstream3.gradle.CloudstreamExtension
 import com.android.build.gradle.BaseExtension
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 buildscript {
     repositories {
@@ -9,7 +10,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.1.4")
+        classpath("com.android.tools.build:gradle:8.2.2")
         classpath("com.github.recloudstream:gradle:-SNAPSHOT")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.0")
     }
@@ -17,6 +18,7 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         maven("https://jitpack.io")
@@ -47,7 +49,7 @@ subprojects {
 
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
             compilerOptions {
-                jvmTarget.set("1.8")
+                jvmTarget.set(JvmTarget.JVM_1_8)
                 freeCompilerArgs.addAll(
                     "-Xno-call-assertions",
                     "-Xno-param-assertions",
@@ -57,16 +59,26 @@ subprojects {
         }
     }
 
+    configurations.all {
+        resolutionStrategy {
+            force("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.1")
+            force("com.fasterxml.jackson.core:jackson-databind:2.13.1")
+            force("com.fasterxml.jackson.core:jackson-core:2.13.1")
+            force("com.fasterxml.jackson.core:jackson-annotations:2.13.1")
+        }
+    }
+
     dependencies {
         val implementation by configurations
 
         implementation(kotlin("stdlib"))
         implementation("com.github.Blatzar:NiceHttp:0.4.11")
         implementation("org.jsoup:jsoup:1.17.2")
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.1")
         implementation("io.karn:khttp-android:0.1.2")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
         implementation("org.mozilla:rhino:1.7.14")
+        implementation("com.lagradost.api:library-android:1.0.1")
     }
 }
 

@@ -1,11 +1,10 @@
 package com.stinkbugNSFW.hentaimama
 
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.LoadResponse.Companion.addAniListId
-import com.lagradost.cloudstream3.LoadResponse.Companion.addMalId
 import com.lagradost.cloudstream3.mvvm.safeApiCall
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.nicehttp.NiceResponse
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
@@ -31,7 +30,7 @@ class HentaiMamaProvider : MainAPI() {
             return when (status.lowercase()) {
                 "ongoing", "airing", "releasing" -> ShowStatus.Ongoing
                 "completed", "finished", "ended" -> ShowStatus.Completed
-                else -> ShowStatus.Unknown
+                else -> ShowStatus.Completed
             }
         }
     }
@@ -184,22 +183,22 @@ class HentaiMamaProvider : MainAPI() {
                 this.posterUrl = poster
                 this.year = year
                 this.plot = plot
-                this.tags = tags
+                this.tags = (this.tags ?: emptyList()) + tags
                 this.showStatus = status
                 addEpisodes(DubStatus.Subbed, episodes)
-                if (hasEnglishSub) addSubLanguage("en")
-                if (malId != null) addMalId(malId)
-                if (aniListId != null) addAniListId(aniListId)
+                if (hasEnglishSub) this.tags = (this.tags ?: emptyList()) + "English Sub"
+                if (malId != null) this.syncData = (this.syncData ?: mutableMapOf()).apply { put("malId", malId.toString()) }
+                if (aniListId != null) this.syncData = (this.syncData ?: mutableMapOf()).apply { put("aniListId", aniListId.toString()) }
             }
         } else {
-            newMovieLoadResponse(title, url, type, episodes.first().url) {
+            newMovieLoadResponse(title, url, type, episodes.first().data) {
                 this.posterUrl = poster
                 this.year = year
                 this.plot = plot
-                this.tags = tags
-                if (hasEnglishSub) addSubLanguage("en")
-                if (malId != null) addMalId(malId)
-                if (aniListId != null) addAniListId(aniListId)
+                this.tags = (this.tags ?: emptyList()) + tags
+                if (hasEnglishSub) this.tags = (this.tags ?: emptyList()) + "English Sub"
+                if (malId != null) this.syncData = (this.syncData ?: mutableMapOf()).apply { put("malId", malId.toString()) }
+                if (aniListId != null) this.syncData = (this.syncData ?: mutableMapOf()).apply { put("aniListId", aniListId.toString()) }
             }
         }
     }
@@ -213,27 +212,35 @@ class HentaiMamaProvider : MainAPI() {
 
         val document = request(data).document
 
-        document.select("track[kind=subtitles][srclang]").forEach { track ->
-            val src = track.attr("src") ?: return@forEach
+val tracks = document.select("track[kind=subtitles][srclang]")
+        for (i in 0 until tracks.size) {
+            val track = tracks[i]
+            val src = track.attr("src") ?: continue
             val lang = track.attr("srclang") ?: "en"
             subtitleCallback.invoke(newSubtitleFile(lang.uppercase(), fixUrl(src)))
         }
 
         val videoSources = mutableListOf<String>()
 
-        document.select("video source[src]").forEach { source ->
+        val videoSourcesList = document.select("video source[src]")
+        for (i in 0 until videoSourcesList.size) {
+            val source = videoSourcesList[i]
             val src = source.attr("src")
             if (src.isNotEmpty()) videoSources.add(src)
         }
 
-        document.select("iframe[src], iframe[data-src]").forEach { iframe ->
+        val iframes = document.select("iframe[src], iframe[data-src]")
+        for (i in 0 until iframes.size) {
+            val iframe = iframes[i]
             val src = iframe.attr("src").ifEmpty { iframe.attr("data-src") }
             if (src.isNotEmpty() && !src.contains("ads", true) && !src.contains("adsense", true)) {
                 videoSources.add(src)
             }
         }
 
-        document.select(".player-iframe, .video-player, .embed-responsive iframe").forEach { player ->
+        val players = document.select(".player-iframe, .video-player, .embed-responsive iframe")
+        for (i in 0 until players.size) {
+            val player = players[i]
             val src = player.attr("src") ?: player.attr("data-src") ?: ""
             if (src.isNotEmpty() && !src.contains("ads", true)) {
                 videoSources.add(src)
@@ -241,25 +248,24 @@ class HentaiMamaProvider : MainAPI() {
         }
 
         val seen = mutableSetOf<String>()
-        videoSources
-            .filter { it !in seen && seen.add(it) }
-            .forEach { sourceUrl ->
-                safeApiCall {
-                    loadExtractor(fixUrl(sourceUrl), mainUrl, subtitleCallback) { link ->
-                        val quality = getQualityFromName(link.name) ?: Qualities.Unknown.value
-                        callback.invoke(ExtractorLink(
-                            source = name,
-                            name = link.name,
-                            url = link.url,
-                            referer = mainUrl,
-                            quality = quality,
-                            type = link.type,
-                            headers = link.headers,
-                            extractorData = link.extractorData
-                        ))
-                    }
+        val filteredSources = videoSources.filter { it !in seen && seen.add(it) }
+        for (sourceUrl in filteredSources) {
+            safeApiCall {
+                loadExtractor(fixUrl(sourceUrl), mainUrl, subtitleCallback) { link ->
+                    val quality = getQualityFromName(link.name) ?: Qualities.Unknown.value
+                    callback.invoke(ExtractorLink(
+                        source = name,
+                        name = link.name,
+                        url = link.url,
+                        referer = mainUrl,
+                        quality = quality,
+                        type = link.type,
+                        headers = link.headers,
+                        extractorData = link.extractorData
+                    ))
                 }
             }
+        }
 
         return true
     }
