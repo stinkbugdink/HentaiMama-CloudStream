@@ -30,12 +30,7 @@ fun Project.android(configuration: BaseExtension.() -> Unit) = extensions.getByN
 subprojects {
     apply(plugin = "com.android.library")
     apply(plugin = "kotlin-android")
-    apply(plugin = "com.lagradost.cloudstream3.gradle")
-
-    cloudstream {
-        setRepo(System.getenv("GITHUB_REPOSITORY") ?: "https://github.com/stinkbugdink/HentaiMama-CloudStream")
-        authors = listOf("stinkbugdink")
-    }
+    // CloudStream plugin applied directly in subproject
 
     android {
         compileSdkVersion(34)
@@ -64,8 +59,6 @@ subprojects {
     dependencies {
         val implementation by configurations
 
-        // these dependencies can include any of those which are added by the app,
-        // but you dont need to include any of them if you dont need them
         implementation(kotlin("stdlib"))
         implementation("com.github.Blatzar:NiceHttp:0.4.11")
         implementation("org.jsoup:jsoup:1.17.2")
