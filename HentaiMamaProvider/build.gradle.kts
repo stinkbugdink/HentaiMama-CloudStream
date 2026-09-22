@@ -16,7 +16,7 @@ dependencies {
     val compileOnly by configurations
 
     // Stubs for all CloudStream classes - provided by the app at runtime
-    compileOnly("com.lagradost:cloudstream3:pre-release")
+    compileOnly("com.github.recloudstream.cloudstream:library:-SNAPSHOT")
 
     // these dependencies can include any of those which are added by the app,
     // but you dont need to include any of them if you dont need them
