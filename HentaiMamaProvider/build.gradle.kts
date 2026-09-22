@@ -4,7 +4,7 @@ android {
     namespace = "com.stinkbugNSFW.hentaimama"
 }
 
-apply(plugin = "com.lagradost.cloudstream3.gradle")
+apply(plugin = "com.github.recloudstream.gradle")
 
 cloudstream {
     description = "HentaiMama - Free Hentai Streaming with English Subtitles"
