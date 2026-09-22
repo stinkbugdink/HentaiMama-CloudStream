@@ -12,11 +12,11 @@ cloudstream {
 }
 
 dependencies {
-    val apk by configurations
     val implementation by configurations
+    val compileOnly by configurations
 
     // Stubs for all CloudStream classes - provided by the app at runtime
-    apk("com.lagradost:cloudstream3:pre-release")
+    compileOnly("com.lagradost:cloudstream3:pre-release")
 
     // these dependencies can include any of those which are added by the app,
     // but you dont need to include any of them if you dont need them
