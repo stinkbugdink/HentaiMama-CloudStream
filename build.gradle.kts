@@ -30,7 +30,7 @@ fun Project.android(configuration: BaseExtension.() -> Unit) = extensions.getByN
 subprojects {
     apply(plugin = "com.android.library")
     apply(plugin = "kotlin-android")
-    // CloudStream plugin applied directly in subproject
+    apply(plugin = "com.lagradost.cloudstream3.gradle")
 
     android {
         compileSdkVersion(34)
